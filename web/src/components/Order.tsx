@@ -1,9 +1,10 @@
 import { forwardRef, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { Eyebrow } from './Decor';
-import { APPS_SCRIPT_URL, PREVIEW_CONFIRMATION } from '../config';
+import { APPS_SCRIPT_URL, FORMSUBMIT_TARGET, PREVIEW_CONFIRMATION } from '../config';
+import { submitAppsScript, submitFormSubmit } from '../lib/submit';
 import {
   EMPTY_FORM, FIELD_FOCUS, HOME_SUPPLEMENT, MAX_QTY, METHODS, PRICE, PRODUCT, RATES, SIZES, WILAYA_ORDER,
-  buildPayload, fmt, newToken, pad2, quote, validate, whatsAppUrl,
+  fmt, newToken, pad2, quote, validate, whatsAppUrl,
   type ConfirmedOrder, type FieldKey, type Method, type OrderForm
 } from '../lib/order';
 import { scrollToId, scrollToTop } from '../lib/scroll';
@@ -83,27 +84,18 @@ export const OrderSection = forwardRef<HTMLElement>(function OrderSection(_, ref
     const first = FIELD_FOCUS.find(([k]) => errs[k]);
     if (first) { setAttempted(true); document.getElementById(first[1])?.focus(); return; }
     if (f.website) return; // honeypot
-    if (!APPS_SCRIPT_URL) { setStatus('error'); setSubmitError("Online ordering isn't connected yet. Please send your order on WhatsApp for now."); return; }
+    if (!APPS_SCRIPT_URL && !FORMSUBMIT_TARGET) { setStatus('error'); setSubmitError("Online ordering isn't connected yet. Please send your order on WhatsApp for now."); return; }
 
     inFlight.current = true;
     setStatus('submitting');
     setSubmitError('');
-    const ctrl = new AbortController(), timer = setTimeout(() => ctrl.abort(), 30000);
     try {
-      // text/plain avoids a CORS preflight, which Apps Script web apps don't answer.
-      const res = await fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(buildPayload(f, token)), redirect: 'follow', signal: ctrl.signal });
-      let data: { ok?: boolean; error?: string; order?: ConfirmedOrder };
-      try { data = await res.json(); } catch { throw new Error('The order server sent an unexpected response.'); }
-      if (!data?.ok || !data.order) throw new Error(data?.error || 'The order could not be confirmed.');
-      setOrder(data.order);
+      setOrder(APPS_SCRIPT_URL ? await submitAppsScript(APPS_SCRIPT_URL, f, token) : await submitFormSubmit(FORMSUBMIT_TARGET, f, token));
       setStatus('success');
     } catch (err) {
-      const msg = err instanceof DOMException && err.name === 'AbortError' ? 'The connection timed out. Check your internet connection and try again.'
-        : err instanceof TypeError ? "We couldn't reach the order server. Check your internet connection and try again."
-        : (err as Error).message;
       setStatus('error');
-      setSubmitError(msg);
-    } finally { clearTimeout(timer); inFlight.current = false; }
+      setSubmitError((err as Error).message);
+    } finally { inFlight.current = false; }
   };
 
   const backToWagmi = () => { setF(EMPTY_FORM); setAttempted(false); setStatus('idle'); setSubmitError(''); setOrder(null); setToken(newToken()); scrollToTop(); };

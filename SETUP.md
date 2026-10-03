@@ -1,5 +1,19 @@
 # WAGMI Rengoku Drop — Setup
 
+## Quick start: order emails with FormSubmit (no backend)
+Without an Apps Script URL, the order form emails each order to **dazaiosa2000@gmail.com** through FormSubmit (formsubmit.co).
+
+1. Publish the site (see "Building and hosting the website" below). FormSubmit doesn't accept orders from a page opened as a local file.
+2. Place one test order. FormSubmit sends an **activation email** to dazaiosa2000@gmail.com. Click the link in it. Until you do, orders are not delivered and customers see an error that points them to WhatsApp.
+3. Place another test order. You should get an email titled `NEW WAGMI ORDER — WGM-…` with the full order and the total to collect.
+4. Recommended: FormSubmit's activation email also gives you a random alias. Put it in `web/.env` as `VITE_FORMSUBMIT_EMAIL=<alias>` and rebuild, so your address isn't visible in the page source (where spammers can find it).
+
+FormSubmit is quick to set up, but it has limits: totals are calculated in the customer's browser and not checked on a server, and orders are not saved to a spreadsheet. Before you ship an order, check the total in the email against the wilaya and delivery method. For server-checked totals and a Google Sheets order log, set up the Apps Script backend below. Once `VITE_APPS_SCRIPT_URL` is set, it replaces FormSubmit.
+
+To turn FormSubmit off, set `VITE_FORMSUBMIT_EMAIL=off`.
+
+## Full backend: Apps Script + Google Sheets
+
 The website is ready. To receive orders by email and in Google Sheets, connect the backend once (about 10 minutes, Google account required).
 
 ## 1. Create the order sheet
