@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #080808;
+  --color-panel: #0D0D0D;
+  --color-field: #101010;
+  --color-tile: #111111;
+  --color-charcoal: #151515;
+  --color-flame: #C62828;
+  --color-flame-dark: #A91F1F;
+  --color-gold: #F5A623;
+  --color-off: #F5F0E8;
+  --color-label: #E9E3D9;
+  --color-soft: #CFC8BD;
+  --color-soft-2: #B4ADA2;
+  --color-muted: #A39C91;
+  --color-dim: #8F887E;
+  --color-dim-2: #7F796F;
+  --color-err: #FF7A6B;
+
+  --font-sans: 'Archivo', system-ui, sans-serif;
+  --font-display: 'Anton', sans-serif;
+  --font-jp: 'Noto Serif JP', serif;
+
+  --animate-flicker: wg-flicker 7s ease-in-out infinite;
+  --animate-marquee: wg-marquee 42s linear infinite;
+  --animate-spin-fast: spin .8s linear infinite;
+}
+
+@keyframes wg-flicker { 0%, 100% { opacity: .7; transform: scale(1) } 50% { opacity: 1; transform: scale(1.05) } }
+@keyframes wg-lick { 0% { transform: scaleY(.82) scaleX(1.04) skewX(-4deg); opacity: .7 } 50% { transform: scaleY(1.06) scaleX(.94) skewX(3deg); opacity: 1 } 100% { transform: scaleY(.9) scaleX(1) skewX(-1deg); opacity: .85 } }
+@keyframes wg-rise { 0% { transform: translate(0, 0) scale(1); opacity: 0 } 10% { opacity: 1 } 80% { opacity: .8 } 100% { transform: translate(var(--dx), -80vh) scale(.4); opacity: 0 } }
+@keyframes wg-marquee { to { transform: translateX(-50%) } }
+
+@layer base {
+  html { scroll-behavior: smooth; color-scheme: dark }
+  body { margin: 0; background: var(--color-ink); color: var(--color-off); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility }
+  a { color: var(--color-off); text-underline-offset: 3px }
+  a:hover { color: var(--color-gold) }
+  ::placeholder { color: #6F695F }
+  :focus-visible { outline: 2px solid var(--color-gold); outline-offset: 3px }
+  ::selection { background: var(--color-flame); color: var(--color-off) }
+  button:not(:disabled) { cursor: pointer }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto }
+  *, *::before, *::after { animation: none !important; transition: none !important }
+}
